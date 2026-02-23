@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raccolta rifiuti - Domani</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #020617;
+      --card: #020617;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --organico: #92400e;
+      --indiff: #111827;
+      --carta: #0ea5e9;
+      --plastica: #eab308;
+      --vetro: #16a34a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: radial-gradient(circle at top, #111827 0, #020617 55%);
+      color: var(--text);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 24px;
+      padding: 20px 18px 16px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(18px);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge-small {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #020617;
+      background: #e5e7eb;
+    }
+
+    .chip-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .chip.organico {
+      background: rgba(148, 92, 36, 0.18);
+      color: #fed7aa;
+      border: 1px solid rgba(180, 83, 9, 0.7);
+    }
+
+    .chip.indiff {
+      background: rgba(15, 23, 42, 0.7);
+      color: #e5e7eb;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+    }
+
+    .chip.carta {
+      background: rgba(56, 189, 248, 0.16);
+      color: #bae6fd;
+      border: 1px solid rgba(56, 189, 248, 0.7);
+    }
+
+    .chip.plastica {
+      background: rgba(234, 179, 8, 0.16);
+      color: #fef9c3;
+      border: 1px solid rgba(234, 179, 8, 0.7);
+    }
+
+    .chip.vetro {
+      background: rgba(22, 163, 74, 0.16);
+      color: #bbf7d0;
+      border: 1px solid rgba(22, 163, 74, 0.7);
+    }
+
+    .date-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .note {
+      font-size: 11px;
+      color: var(--muted);
+      min-height: 14px;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .status-ok {
+      color: #22c55e;
+    }
+
+    .status-warn {
+      color: #f97316;
+    }
+
+    .status-err {
+      color: #f97373;
+    }
+
+    @media (prefers-color-scheme: light) {
+      body {
+        background: radial-gradient(circle at top, #e5e7eb 0, #cbd5f5 55%);
+        color: #020617;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.98);
+        border-color: rgba(148, 163, 184, 0.5);
+      }
+      .subtitle,
+      .label,
+      .date-row,
+      .note,
+      .footer {
+        color: #6b7280;
+      }
+    }
+
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 10px;
+}
+
+.buttons button {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s;
+  color: #ffffff;
+}
+
+/* Colori pulsanti */
+.buttons button:nth-child(1) {
+  background: #2563eb; /* blu */
+}
+.buttons button:nth-child(1):hover {
+  background: #1d4ed8;
+}
+
+.buttons button:nth-child(2) {
+  background: #16a34a; /* verde */
+}
+.buttons button:nth-child(2):hover {
+  background: #15803d;
+}
+
+.buttons button:nth-child(3) {
+  background: #d97706; /* arancione */
+}
+.buttons button:nth-child(3):hover {
+  background: #b45309;
+}
+
+.buttons button:nth-child(4) {
+  background: #7c3aed; /* viola */
+}
+.buttons button:nth-child(4):hover {
+  background: #6d28d9;
+}
+
+/* Contenitore risultati */
+.range-output {
+  margin-top: 14px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+
+.no-trash {
+  font-weight: 800;
+  font-size: 18px; /* 2px più grande del resto */
+  color: #ff5555;  /* rosso elegante e ben visibile */
+}
+    
+
+    
+
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <header class="header">
+        <div class="title-block">
+          <div class="title">Raccolta rifiuti</div>
+          <div class="subtitle" id="todayLabel">Oggi: —</div>
+        </div>
+        <div class="badge-small" id="rangeLabel">Calendario: —</div>
+      </header>
+
+      <main>
+        <div class="label">Domani dovrai esporre:</div>
+        <div id="chipsContainer" class="chips"></div>
+
+        <div class="date-row">
+          <div id="tomorrowLabel">Domani: —</div>
+          <div id="isoLabel">Data: —</div>
+        </div>
+        <div class="note" id="noteLabel"></div>
+      </main>
+
+
+<div class="buttons">
+  <button onclick="showWeek()">Settimana</button>
+  <button onclick="showTwoWeeks()">2 Settimane</button>
+  <button onclick="showMonth()">Mese</button>
+  <button onclick="showFiveWeeks()">5 Settimane</button>
+</div>
+
+<div id="rangeOutput" class="range-output"></div>
+
+
+      <footer class="footer">
+        <div id="status" class="status status-ok">
+          <span class="status-dot"></span>
+          <span>Calendario caricato</span>
+        </div>
+        <div class="badge-small">Zona A · Ciriè</div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // ============================
+    // 1. CALENDARIO RACCOLTA
+    // ============================
+    // Formato:
+    // "YYYY-MM-DD": ["Organico", "Vetro", ...]
+    //
+    // Sotto trovi alcuni esempi reali del 2026.
+    // Il calendario completo 2026–2028 è molto lungo:
+    // puoi incollarlo qui seguendo lo stesso formato.
+
+    const schedule = {
+"2026-01-01": [],
+"2026-01-02": [],
+"2026-01-03": [],
+"2026-01-04": [],
+"2026-01-05": ["Organico"],
+"2026-01-06": [],
+"2026-01-07": ["Plastica e Metalli"],
+"2026-01-08": ["Vetro", "Indifferenziato"],
+"2026-01-09": [],
+"2026-01-10": [],
+"2026-01-11": [],
+"2026-01-12": ["Organico"],
+"2026-01-13": [],
+"2026-01-14": ["Carta"],
+"2026-01-15": [],
+"2026-01-16": [],
+"2026-01-17": [],
+"2026-01-18": [],
+"2026-01-19": ["Organico"],
+"2026-01-20": [],
+"2026-01-21": ["Plastica e Metalli"],
+"2026-01-22": ["Indifferenziato"],
+"2026-01-23": [],
+"2026-01-24": [],
+"2026-01-25": [],
+"2026-01-26": ["Organico"],
+"2026-01-27": [],
+"2026-01-28": ["Carta"],
+"2026-01-29": ["Vetro"],
+"2026-01-30": [],
+"2026-01-31": [],
+"2026-02-01": [],
+"2026-02-02": ["Organico"],
+"2026-02-03": [],
+"2026-02-04": ["Plastica e Metalli"],
+"2026-02-05": ["Indifferenziato"],
+"2026-02-06": [],
+"2026-02-07": [],
+"2026-02-08": [],
+"2026-02-09": ["Organico"],
+"2026-02-10": [],
+"2026-02-11": ["Carta"],
+"2026-02-12": [],
+"2026-02-13": [],
+"2026-02-14": [],
+"2026-02-15": [],
+"2026-02-16": ["Organico"],
+"2026-02-17": [],
+"2026-02-18": ["Plastica e Metalli"],
+"2026-02-19": ["Vetro", "Indifferenziato"],
+"2026-02-20": [],
+"2026-02-21": [],
+"2026-02-22": [],
+"2026-02-23": ["Organico"],
+"2026-02-24": [],
+"2026-02-25": ["Carta"],
+"2026-02-26": [],
+"2026-02-27": [],
+"2026-02-28": [],
+"2026-03-01": [],
+"2026-03-02": ["Organico"],
+"2026-03-03": ["Indifferenziato"],
+"2026-03-04": ["Carta"],
+"2026-03-05": ["Vetro"],
+"2026-03-06": [],
+"2026-03-07": [],
+"2026-03-08": [],
+"2026-03-09": ["Organico"],
+"2026-03-10": [],
+"2026-03-11": ["Plastica e Metalli"],
+"2026-03-12": [],
+"2026-03-13": [],
+"2026-03-14": [],
+"2026-03-15": [],
+"2026-03-16": ["Organico"],
+"2026-03-17": ["Indifferenziato"],
+"2026-03-18": ["Carta"],
+"2026-03-19": ["Vetro"],
+"2026-03-20": [],
+"2026-03-21": [],
+"2026-03-22": [],
+"2026-03-23": ["Organico"],
+"2026-03-24": [],
+"2026-03-25": ["Plastica e Metalli"],
+"2026-03-26": [],
+"2026-03-27": [],
+"2026-03-28": [],
+"2026-03-29": [],
+"2026-03-30": ["Organico"],
+"2026-03-31": ["Indifferenziato"],
+"2026-04-01": ["Carta"],
+"2026-04-02": [],
+"2026-04-03": [],
+"2026-04-04": [],
+"2026-04-05": [],
+"2026-04-06": [],
+"2026-04-07": [],
+"2026-04-08": ["Plastica e Metalli"],
+"2026-04-09": ["Vetro"],
+"2026-04-10": [],
+"2026-04-11": [],
+"2026-04-12": [],
+"2026-04-13": ["Organico"],
+"2026-04-14": ["Indifferenziato"],
+"2026-04-15": ["Carta"],
+"2026-04-16": ["Organico"],
+"2026-04-17": [],
+"2026-04-18": [],
+"2026-04-19": [],
+"2026-04-20": ["Organico"],
+"2026-04-21": [],
+"2026-04-22": ["Plastica e Metalli"],
+"2026-04-23": ["Organico"],
+"2026-04-24": [],
+"2026-04-25": [],
+"2026-04-26": [],
+"2026-04-27": [],
+"2026-04-28": ["Carta"],
+"2026-04-29": ["Organico"],
+"2026-04-30": ["Vetro", "Organico"],
+/* =======================
+   MAGGIO 2026
+   ======================= */
+
+"2026-05-01": [],
+"2026-05-02": [],
+"2026-05-03": [],
+"2026-05-04": ["Organico"],
+"2026-05-05": [],
+"2026-05-06": ["Plastica e Metalli"],
+"2026-05-07": ["Organico"],
+"2026-05-08": [],
+"2026-05-09": [],
+"2026-05-10": [],
+"2026-05-11": ["Organico"],
+"2026-05-12": ["Indifferenziato"],
+"2026-05-13": ["Carta"],
+"2026-05-14": ["Organico"],
+"2026-05-15": [],
+"2026-05-16": [],
+"2026-05-17": [],
+"2026-05-18": ["Organico"],
+"2026-05-19": [],
+"2026-05-20": ["Plastica e Metalli"],
+"2026-05-21": ["Vetro", "Organico"],
+"2026-05-22": [],
+"2026-05-23": [],
+"2026-05-24": [],
+"2026-05-25": ["Organico"],
+"2026-05-26": ["Indifferenziato"],
+"2026-05-27": ["Carta"],
+"2026-05-28": ["Organico"],
+"2026-05-29": [],
+"2026-05-30": [],
+"2026-05-31": [],
+
+/* =======================
+   GIUGNO 2026
+   ======================= */
+
+"2026-06-01": ["Organico"],
+"2026-06-02": [],
+"2026-06-03": ["Plastica e Metalli"],
+"2026-06-04": ["Organico"],
+"2026-06-05": [],
+"2026-06-06": [],
+"2026-06-07": [],
+"2026-06-08": ["Organico"],
+"2026-06-09": ["Indifferenziato"],
+"2026-06-10": ["Carta"],
+"2026-06-11": ["Vetro", "Organico"],
+"2026-06-12": [],
+"2026-06-13": [],
+"2026-06-14": [],
+"2026-06-15": ["Organico"],
+"2026-06-16": [],
+"2026-06-17": ["Plastica e Metalli"],
+"2026-06-18": ["Organico"],
+"2026-06-19": [],
+"2026-06-20": [],
+"2026-06-21": [],
+"2026-06-22": ["Organico"],
+"2026-06-23": ["Indifferenziato"],
+"2026-06-24": ["Carta"],
+"2026-06-25": ["Organico"],
+"2026-06-26": [],
+"2026-06-27": [],
+"2026-06-28": [],
+"2026-06-29": ["Organico"],
+"2026-06-30": [],
+
+/* =======================
+   LUGLIO 2026
+   ======================= */
+
+"2026-07-01": ["Plastica e Metalli"],
+"2026-07-02": [],
+"2026-07-03": [],
+"2026-07-04": [],
+"2026-07-05": [],
+"2026-07-06": ["Organico"],
+"2026-07-07": ["Indifferenziato"],
+"2026-07-08": ["Carta"],
+"2026-07-09": ["Vetro", "Organico"],
+"2026-07-10": [],
+"2026-07-11": [],
+"2026-07-12": [],
+"2026-07-13": ["Organico"],
+"2026-07-14": [],
+"2026-07-15": ["Plastica e Metalli"],
+"2026-07-16": ["Organico"],
+"2026-07-17": [],
+"2026-07-18": [],
+"2026-07-19": [],
+"2026-07-20": ["Organico"],
+"2026-07-21": ["Indifferenziato"],
+"2026-07-22": ["Carta"],
+"2026-07-23": ["Vetro", "Organico"],
+"2026-07-24": [],
+"2026-07-25": [],
+"2026-07-26": [],
+"2026-07-27": ["Organico"],
+"2026-07-28": [],
+"2026-07-29": ["Plastica e Metalli"],
+"2026-07-30": ["Organico"],
+"2026-07-31": [],
+
+/* =======================
+   AGOSTO 2026
+   ======================= */
+
+"2026-08-01": [],
+"2026-08-02": [],
+"2026-08-03": ["Organico"],
+"2026-08-04": ["Indifferenziato"],
+"2026-08-05": ["Carta"],
+"2026-08-06": ["Organico"],
+"2026-08-07": [],
+"2026-08-08": [],
+"2026-08-09": [],
+"2026-08-10": ["Organico"],
+"2026-08-11": [],
+"2026-08-12": ["Plastica e Metalli"],
+"2026-08-13": ["Vetro", "Organico"],
+"2026-08-14": [],
+"2026-08-15": [],
+"2026-08-16": [],
+"2026-08-17": ["Organico"],
+"2026-08-18": ["Indifferenziato"],
+"2026-08-19": ["Carta"],
+"2026-08-20": ["Organico"],
+"2026-08-21": [],
+"2026-08-22": [],
+"2026-08-23": [],
+"2026-08-24": ["Organico"],
+"2026-08-25": [],
+"2026-08-26": ["Plastica e Metalli"],
+"2026-08-27": ["Organico"],
+"2026-08-28": [],
+"2026-08-29": [],
+"2026-08-30": [],
+"2026-08-31": ["Organico"],
+
+/* =======================
+   SETTEMBRE 2026
+   ======================= */
+
+"2026-09-01": ["Indifferenziato"],
+"2026-09-02": ["Carta"],
+"2026-09-03": ["Vetro", "Organico"],
+"2026-09-04": [],
+"2026-09-05": [],
+"2026-09-06": [],
+"2026-09-07": ["Organico"],
+"2026-09-08": [],
+"2026-09-09": ["Plastica e Metalli"],
+"2026-09-10": ["Organico"],
+"2026-09-11": [],
+"2026-09-12": [],
+"2026-09-13": [],
+"2026-09-14": ["Organico"],
+"2026-09-15": ["Indifferenziato"],
+"2026-09-16": ["Carta"],
+"2026-09-17": [],
+"2026-09-18": [],
+"2026-09-19": [],
+"2026-09-20": [],
+"2026-09-21": ["Organico"],
+"2026-09-22": [],
+"2026-09-23": ["Plastica e Metalli"],
+"2026-09-24": ["Vetro"],
+"2026-09-25": [],
+"2026-09-26": [],
+"2026-09-27": [],
+"2026-09-28": ["Organico"],
+"2026-09-29": ["Indifferenziato"],
+"2026-09-30": ["Carta"],
+
+/* =======================
+   OTTOBRE 2026
+   ======================= */
+
+"2026-10-01": [],
+"2026-10-02": [],
+"2026-10-03": [],
+"2026-10-04": [],
+"2026-10-05": ["Organico"],
+"2026-10-06": [],
+"2026-10-07": ["Plastica e Metalli"],
+"2026-10-08": [],
+"2026-10-09": [],
+"2026-10-10": [],
+"2026-10-11": [],
+"2026-10-12": ["Organico"],
+"2026-10-13": ["Indifferenziato"],
+"2026-10-14": ["Carta"],
+"2026-10-15": ["Vetro"],
+"2026-10-16": [],
+"2026-10-17": [],
+"2026-10-18": [],
+"2026-10-19": ["Organico"],
+"2026-10-20": [],
+"2026-10-21": ["Plastica e Metalli"],
+"2026-10-22": [],
+"2026-10-23": [],
+"2026-10-24": [],
+"2026-10-25": [],
+"2026-10-26": ["Organico"],
+"2026-10-27": ["Indifferenziato"],
+"2026-10-28": ["Carta"],
+"2026-10-29": [],
+"2026-10-30": [],
+"2026-10-31": [],
+
+/* =======================
+   NOVEMBRE 2026
+   ======================= */
+
+"2026-11-01": [],
+"2026-11-02": ["Organico"],
+"2026-11-03": [],
+"2026-11-04": ["Plastica e Metalli"],
+"2026-11-05": ["Vetro"],
+"2026-11-06": [],
+"2026-11-07": [],
+"2026-11-08": [],
+"2026-11-09": ["Organico"],
+"2026-11-10": [],
+"2026-11-11": ["Carta"],
+"2026-11-12": [],
+"2026-11-13": [],
+"2026-11-14": [],
+"2026-11-15": [],
+"2026-11-16": ["Organico"],
+"2026-11-17": [],
+"2026-11-18": ["Plastica e Metalli"],
+"2026-11-19": [],
+"2026-11-20": [],
+"2026-11-21": [],
+"2026-11-22": [],
+"2026-11-23": ["Organico"],
+"2026-11-24": ["Indifferenziato"],
+"2026-11-25": ["Carta"],
+"2026-11-26": ["Vetro"],
+"2026-11-27": [],
+"2026-11-28": [],
+"2026-11-29": [],
+"2026-11-30": ["Organico"],
+
+/* =======================
+   DICEMBRE 2026
+   ======================= */
+
+"2026-12-01": [],
+"2026-12-02": ["Plastica e Metalli"],
+"2026-12-03": [],
+"2026-12-04": [],
+"2026-12-05": [],
+"2026-12-06": [],
+"2026-12-07": ["Organico"],
+"2026-12-08": ["Indifferenziato"],
+"2026-12-09": ["Carta"],
+"2026-12-10": [],
+"2026-12-11": [],
+"2026-12-12": [],
+"2026-12-13": [],
+"2026-12-14": ["Organico"],
+"2026-12-15": [],
+"2026-12-16": ["Plastica e Metalli"],
+"2026-12-17": ["Vetro"],
+"2026-12-18": [],
+"2026-12-19": [],
+"2026-12-20": [],
+"2026-12-21": ["Organico"],
+"2026-12-22": ["Indifferenziato"],
+"2026-12-23": ["Carta"],
+"2026-12-24": [],
+"2026-12-25": [],
+"2026-12-26": [],
+"2026-12-27": ["Organico"],
+"2026-12-28": [],
+"2026-12-29": ["Plastica e Metalli"],
+"2026-12-30": ["Vetro"],
+"2026-12-31": [],
+/* =======================
+   GENNAIO 2027
+   ======================= */
+
+"2027-01-01": [],
+"2027-01-02": [],
+"2027-01-03": [],
+"2027-01-04": ["Organico"],
+"2027-01-05": ["Carta", "Indifferenziato"],
+"2027-01-06": [],
+"2027-01-07": ["Vetro"],
+"2027-01-08": [],
+"2027-01-09": [],
+"2027-01-10": [],
+"2027-01-11": ["Organico"],
+"2027-01-12": [],
+"2027-01-13": ["Plastica e Metalli"],
+"2027-01-14": [],
+"2027-01-15": [],
+"2027-01-16": [],
+"2027-01-17": [],
+"2027-01-18": ["Organico"],
+"2027-01-19": ["Indifferenziato"],
+"2027-01-20": ["Carta"],
+"2027-01-21": [],
+"2027-01-22": [],
+"2027-01-23": [],
+"2027-01-24": ["Organico"],
+"2027-01-25": [],
+"2027-01-26": [],
+"2027-01-27": ["Plastica e Metalli"],
+"2027-01-28": ["Vetro"],
+"2027-01-29": [],
+"2027-01-30": [],
+"2027-01-31": [],
+
+/* =======================
+   FEBBRAIO 2027
+   ======================= */
+
+"2027-02-01": ["Organico"],
+"2027-02-02": ["Indifferenziato"],
+"2027-02-03": ["Carta", "Plastica e Metalli"],
+"2027-02-04": [],
+"2027-02-05": [],
+"2027-02-06": [],
+"2027-02-07": [],
+"2027-02-08": ["Organico"],
+"2027-02-09": [],
+"2027-02-10": ["Plastica e Metalli"],
+"2027-02-11": [],
+"2027-02-12": [],
+"2027-02-13": ["Indifferenziato"],
+"2027-02-14": [],
+"2027-02-15": ["Organico"],
+"2027-02-16": ["Indifferenziato"],
+"2027-02-17": ["Carta"],
+"2027-02-18": ["Vetro"],
+"2027-02-19": [],
+"2027-02-20": [],
+"2027-02-21": [],
+"2027-02-22": ["Organico"],
+"2027-02-23": [],
+"2027-02-24": ["Plastica e Metalli"],
+"2027-02-25": [],
+"2027-02-26": [],
+"2027-02-27": [],
+"2027-02-28": [],
+
+/* =======================
+   MARZO 2027
+   ======================= */
+
+"2027-03-01": ["Organico"],
+"2027-03-02": ["Indifferenziato"],
+"2027-03-03": ["Carta"],
+"2027-03-04": [],
+"2027-03-05": [],
+"2027-03-06": [],
+"2027-03-07": [],
+"2027-03-08": ["Organico"],
+"2027-03-09": [],
+"2027-03-10": ["Plastica e Metalli"],
+"2027-03-11": ["Vetro"],
+"2027-03-12": [],
+"2027-03-13": [],
+"2027-03-14": [],
+"2027-03-15": ["Organico"],
+"2027-03-16": ["Indifferenziato"],
+"2027-03-17": ["Carta"],
+"2027-03-18": [],
+"2027-03-19": [],
+"2027-03-20": [],
+"2027-03-21": [],
+"2027-03-22": ["Organico"],
+"2027-03-23": [],
+"2027-03-24": ["Plastica e Metalli"],
+"2027-03-25": [],
+"2027-03-26": [],
+"2027-03-27": [],
+"2027-03-28": [],
+"2027-03-29": ["Organico"],
+"2027-03-30": ["Indifferenziato"],
+"2027-03-31": ["Carta"],
+
+/* =======================
+   APRILE 2027
+   ======================= */
+
+"2027-04-01": ["Vetro"],
+"2027-04-02": [],
+"2027-04-03": [],
+"2027-04-04": [],
+"2027-04-05": ["Organico"],
+"2027-04-06": [],
+"2027-04-07": ["Plastica e Metalli"],
+"2027-04-08": [],
+"2027-04-09": [],
+"2027-04-10": [],
+"2027-04-11": [],
+"2027-04-12": ["Organico"],
+"2027-04-13": ["Indifferenziato"],
+"2027-04-14": ["Carta"],
+"2027-04-15": ["Organico"],
+"2027-04-16": [],
+"2027-04-17": [],
+"2027-04-18": [],
+"2027-04-19": ["Organico"],
+"2027-04-20": [],
+"2027-04-21": ["Plastica e Metalli"],
+"2027-04-22": ["Vetro", "Organico"],
+"2027-04-23": [],
+"2027-04-24": [],
+"2027-04-25": [],
+"2027-04-26": ["Organico"],
+"2027-04-27": ["Indifferenziato"],
+"2027-04-28": ["Carta"],
+"2027-04-29": ["Organico"],
+"2027-04-30": [],
+
+/* =======================
+   MAGGIO 2027
+   ======================= */
+
+"2027-05-01": [],
+"2027-05-02": [],
+"2027-05-03": ["Organico"],
+"2027-05-04": [],
+"2027-05-05": ["Plastica e Metalli"],
+"2027-05-06": ["Organico"],
+"2027-05-07": [],
+"2027-05-08": [],
+"2027-05-09": [],
+"2027-05-10": ["Organico"],
+"2027-05-11": ["Indifferenziato"],
+"2027-05-12": ["Carta"],
+"2027-05-13": ["Vetro", "Organico"],
+"2027-05-14": [],
+"2027-05-15": [],
+"2027-05-16": [],
+"2027-05-17": ["Organico"],
+"2027-05-18": [],
+"2027-05-19": ["Plastica e Metalli"],
+"2027-05-20": ["Organico"],
+"2027-05-21": [],
+"2027-05-22": [],
+"2027-05-23": [],
+"2027-05-24": ["Organico"],
+"2027-05-25": ["Indifferenziato"],
+"2027-05-26": ["Carta"],
+"2027-05-27": ["Organico"],
+"2027-05-28": [],
+"2027-05-29": [],
+"2027-05-30": [],
+"2027-05-31": ["Organico"],
+
+/* =======================
+   GIUGNO 2027
+   ======================= */
+
+"2027-06-01": [],
+"2027-06-02": [],
+"2027-06-03": ["Vetro", "Organico"],
+"2027-06-04": [],
+"2027-06-05": [],
+"2027-06-06": [],
+"2027-06-07": ["Organico"],
+"2027-06-08": ["Indifferenziato"],
+"2027-06-09": ["Carta"],
+"2027-06-10": ["Organico"],
+"2027-06-11": [],
+"2027-06-12": [],
+"2027-06-13": [],
+"2027-06-14": ["Organico"],
+"2027-06-15": [],
+"2027-06-16": ["Plastica e Metalli"],
+"2027-06-17": ["Organico"],
+"2027-06-18": [],
+"2027-06-19": [],
+"2027-06-20": [],
+"2027-06-21": ["Organico"],
+"2027-06-22": ["Indifferenziato"],
+"2027-06-23": ["Carta"],
+"2027-06-24": ["Vetro", "Organico"],
+"2027-06-25": [],
+"2027-06-26": [],
+"2027-06-27": [],
+"2027-06-28": ["Organico"],
+"2027-06-29": [],
+"2027-06-30": ["Plastica e Metalli"],
+
+/* =======================
+   LUGLIO 2027
+   ======================= */
+
+"2027-07-01": ["Organico"],
+"2027-07-02": [],
+"2027-07-03": [],
+"2027-07-04": [],
+"2027-07-05": ["Organico"],
+"2027-07-06": ["Indifferenziato"],
+"2027-07-07": ["Carta"],
+"2027-07-08": ["Organico"],
+"2027-07-09": [],
+"2027-07-10": [],
+"2027-07-11": [],
+"2027-07-12": ["Organico"],
+"2027-07-13": [],
+"2027-07-14": [],
+"2027-07-15": ["Plastica e Metalli"],
+"2027-07-16": ["Organico"],
+"2027-07-17": [],
+"2027-07-18": [],
+"2027-07-19": ["Organico"],
+"2027-07-20": ["Indifferenziato"],
+"2027-07-21": ["Carta"],
+"2027-07-22": ["Organico"],
+"2027-07-23": [],
+"2027-07-24": [],
+"2027-07-25": [],
+"2027-07-26": ["Organico"],
+"2027-07-27": [],
+"2027-07-28": ["Plastica e Metalli"],
+"2027-07-29": ["Organico"],
+"2027-07-30": [],
+"2027-07-31": [],
+
+/* =======================
+   AGOSTO 2027
+   ======================= */
+
+"2027-08-01": [],
+"2027-08-02": ["Organico"],
+"2027-08-03": ["Indifferenziato"],
+"2027-08-04": ["Carta"],
+"2027-08-05": ["Vetro", "Organico"],
+"2027-08-06": [],
+"2027-08-07": [],
+"2027-08-08": [],
+"2027-08-09": ["Organico"],
+"2027-08-10": [],
+"2027-08-11": ["Plastica e Metalli"],
+"2027-08-12": ["Organico"],
+"2027-08-13": [],
+"2027-08-14": [],
+"2027-08-15": [],
+"2027-08-16": ["Organico"],
+"2027-08-17": ["Indifferenziato"],
+"2027-08-18": ["Carta"],
+"2027-08-19": ["Organico"],
+"2027-08-20": [],
+"2027-08-21": [],
+"2027-08-22": [],
+"2027-08-23": ["Organico"],
+"2027-08-24": [],
+"2027-08-25": ["Plastica e Metalli"],
+"2027-08-26": ["Vetro", "Organico"],
+"2027-08-27": [],
+"2027-08-28": [],
+"2027-08-29": [],
+"2027-08-30": ["Organico"],
+"2027-08-31": ["Indifferenziato"],
+
+/* =======================
+   SETTEMBRE 2027
+   ======================= */
+
+"2027-09-01": ["Carta"],
+"2027-09-02": ["Organico"],
+"2027-09-03": [],
+"2027-09-04": [],
+"2027-09-05": [],
+"2027-09-06": ["Organico"],
+"2027-09-07": [],
+"2027-09-08": ["Plastica e Metalli"],
+"2027-09-09": ["Organico"],
+"2027-09-10": [],
+"2027-09-11": [],
+"2027-09-12": [],
+"2027-09-13": ["Organico"],
+"2027-09-14": ["Indifferenziato"],
+"2027-09-15": ["Carta"],
+"2027-09-16": ["Vetro"],
+"2027-09-17": [],
+"2027-09-18": [],
+"2027-09-19": [],
+"2027-09-20": ["Organico"],
+"2027-09-21": [],
+"2027-09-22": ["Plastica e Metalli"],
+"2027-09-23": [],
+"2027-09-24": [],
+"2027-09-25": [],
+"2027-09-26": [],
+"2027-09-27": ["Organico"],
+"2027-09-28": ["Indifferenziato"],
+"2027-09-29": ["Plastica e Metalli", "Carta"],
+"2027-09-30": [],
+/* =======================
+   OTTOBRE 2027
+   ======================= */
+
+"2027-10-01": [],
+"2027-10-02": [],
+"2027-10-03": [],
+"2027-10-04": ["Organico"],
+"2027-10-05": [],
+"2027-10-06": ["Plastica e Metalli"],
+"2027-10-07": ["Vetro"],
+"2027-10-08": [],
+"2027-10-09": [],
+"2027-10-10": [],
+"2027-10-11": ["Organico"],
+"2027-10-12": ["Indifferenziato"],
+"2027-10-13": ["Carta"],
+"2027-10-14": [],
+"2027-10-15": [],
+"2027-10-16": [],
+"2027-10-17": [],
+"2027-10-18": ["Organico"],
+"2027-10-19": [],
+"2027-10-20": ["Plastica e Metalli"],
+"2027-10-21": [],
+"2027-10-22": [],
+"2027-10-23": [],
+"2027-10-24": [],
+"2027-10-25": ["Organico"],
+"2027-10-26": ["Indifferenziato"],
+"2027-10-27": ["Carta"],
+"2027-10-28": ["Vetro"],
+"2027-10-29": [],
+"2027-10-30": [],
+"2027-10-31": [],
+
+/* =======================
+   NOVEMBRE 2027
+   ======================= */
+
+"2027-11-01": ["Organico"],
+"2027-11-02": [],
+"2027-11-03": ["Plastica e Metalli"],
+"2027-11-04": [],
+"2027-11-05": [],
+"2027-11-06": [],
+"2027-11-07": [],
+"2027-11-08": ["Organico"],
+"2027-11-09": ["Indifferenziato"],
+"2027-11-10": ["Carta"],
+"2027-11-11": [],
+"2027-11-12": [],
+"2027-11-13": [],
+"2027-11-14": [],
+"2027-11-15": ["Organico"],
+"2027-11-16": [],
+"2027-11-17": ["Plastica e Metalli"],
+"2027-11-18": ["Vetro"],
+"2027-11-19": [],
+"2027-11-20": [],
+"2027-11-21": [],
+"2027-11-22": ["Organico"],
+"2027-11-23": ["Indifferenziato"],
+"2027-11-24": ["Carta"],
+"2027-11-25": [],
+"2027-11-26": [],
+"2027-11-27": [],
+"2027-11-28": [],
+"2027-11-29": ["Organico"],
+"2027-11-30": [],
+
+/* =======================
+   DICEMBRE 2027
+   ======================= */
+
+"2027-12-01": ["Plastica e Metalli"],
+"2027-12-02": [],
+"2027-12-03": [],
+"2027-12-04": [],
+"2027-12-05": [],
+"2027-12-06": ["Organico"],
+"2027-12-07": ["Carta", "Indifferenziato"],
+"2027-12-08": [],
+"2027-12-09": ["Vetro"],
+"2027-12-10": [],
+"2027-12-11": [],
+"2027-12-12": [],
+"2027-12-13": ["Organico"],
+"2027-12-14": [],
+"2027-12-15": ["Plastica e Metalli"],
+"2027-12-16": [],
+"2027-12-17": [],
+"2027-12-18": [],
+"2027-12-19": [],
+"2027-12-20": ["Organico"],
+"2027-12-21": ["Indifferenziato"],
+"2027-12-22": ["Carta"],
+"2027-12-23": [],
+"2027-12-24": [],
+"2027-12-25": [],
+"2027-12-26": [],
+"2027-12-27": ["Organico"],
+"2027-12-28": [],
+"2027-12-29": ["Plastica e Metalli"],
+"2027-12-30": ["Vetro"],
+"2027-12-31": [],
+/* =======================
+   GENNAIO 2028
+   ======================= */
+
+"2028-01-01": [],
+"2028-01-02": [],
+"2028-01-03": ["Organico"],
+"2028-01-04": ["Indifferenziato"],
+"2028-01-05": ["Carta"],
+"2028-01-06": [],
+"2028-01-07": [],
+"2028-01-08": [],
+"2028-01-09": ["Organico"],
+"2028-01-10": [],
+"2028-01-11": ["Plastica e Metalli"],
+"2028-01-12": [],
+"2028-01-13": [],
+"2028-01-14": [],
+"2028-01-15": [],
+"2028-01-16": ["Organico"],
+"2028-01-17": ["Indifferenziato"],
+"2028-01-18": ["Carta"],
+"2028-01-19": ["Vetro"],
+"2028-01-20": [],
+"2028-01-21": [],
+"2028-01-22": [],
+"2028-01-23": ["Organico"],
+"2028-01-24": [],
+"2028-01-25": [],
+"2028-01-26": ["Plastica e Metalli"],
+"2028-01-27": [],
+"2028-01-28": [],
+"2028-01-29": [],
+"2028-01-30": [],
+"2028-01-31": ["Organico"],
+
+/* =======================
+   FEBBRAIO 2028
+   ======================= */
+
+"2028-02-01": ["Indifferenziato"],
+"2028-02-02": ["Carta"],
+"2028-02-03": [],
+"2028-02-04": [],
+"2028-02-05": [],
+"2028-02-06": ["Organico"],
+"2028-02-07": [],
+"2028-02-08": ["Plastica e Metalli"],
+"2028-02-09": [],
+"2028-02-10": [],
+"2028-02-11": [],
+"2028-02-12": [],
+"2028-02-13": [],
+"2028-02-14": ["Organico"],
+"2028-02-15": ["Indifferenziato"],
+"2028-02-16": ["Carta"],
+"2028-02-17": [],
+"2028-02-18": [],
+"2028-02-19": [],
+"2028-02-20": ["Organico"],
+"2028-02-21": [],
+"2028-02-22": ["Plastica e Metalli"],
+"2028-02-23": [],
+"2028-02-24": [],
+"2028-02-25": [],
+"2028-02-26": [],
+"2028-02-27": [],
+"2028-02-28": ["Organico"],
+"2028-02-29": ["Indifferenziato"]
+
+
+
+
+
+
+
+
+
+
+
+
+      // QUI incollerai tutto il resto del calendario 2026–2028
+      // seguendo lo stesso formato.
+    };
+
+    // ============================
+    // 2. UTILITY DATE
+    // ============================
+
+    function toISODate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function formatItalianDate(d) {
+      return d.toLocaleDateString("it-IT", {
+        weekday: "long",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // ============================
+    // 3. RENDER
+    // ============================
+
+    function chipClassFor(type) {
+      const t = type.toLowerCase();
+      if (t.includes("organico")) return "organico";
+      if (t.includes("indifferenziato")) return "indiff";
+      if (t.includes("carta")) return "carta";
+      if (t.includes("plastica") || t.includes("metalli")) return "plastica";
+      if (t.includes("vetro")) return "vetro";
+      return "";
+    }
+
+    function init() {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+
+      const isoTomorrow = toISODate(tomorrow);
+
+      const todayLabel = document.getElementById("todayLabel");
+      const tomorrowLabel = document.getElementById("tomorrowLabel");
+      const isoLabel = document.getElementById("isoLabel");
+      const noteLabel = document.getElementById("noteLabel");
+      const chipsContainer = document.getElementById("chipsContainer");
+      const status = document.getElementById("status");
+      const rangeLabel = document.getElementById("rangeLabel");
+
+      todayLabel.textContent = "Oggi: " + capitalize(formatItalianDate(today));
+      tomorrowLabel.textContent =
+        "Domani: " + capitalize(formatItalianDate(tomorrow));
+      isoLabel.textContent = "Data: " + isoTomorrow;
+
+      const dates = Object.keys(schedule).sort();
+      if (dates.length === 0) {
+        chipsContainer.innerHTML = "";
+        const span = document.createElement("span");
+        span.textContent = "Calendario non configurato.";
+        span.style.fontSize = "13px";
+        chipsContainer.appendChild(span);
+
+        noteLabel.textContent =
+          "Devi incollare i dati del calendario nell'oggetto 'schedule' nel codice.";
+        status.className = "status status-err";
+        status.innerHTML =
+          '<span class="status-dot"></span><span>Nessun dato calendario</span>';
+        rangeLabel.textContent = "Calendario: —";
+        return;
+      }
+
+      const first = dates[0];
+      const last = dates[dates.length - 1];
+      rangeLabel.textContent = `Calendario: ${first} → ${last}`;
+
+      const types = schedule[isoTomorrow] || [];
+
+      chipsContainer.innerHTML = "";
+
+      if (!types || types.length === 0) {
+        const span = document.createElement("span");
+        span.textContent = "Nessun conferimento previsto.";
+        span.style.fontSize = "22px";
+        chipsContainer.appendChild(span);
+
+
+}
+
+
+
+      
+
+      
+        noteLabel.textContent =
+          "Per questa data non risultano raccolte nel calendario.";
+        status.className = "status status-warn";
+        status.innerHTML =
+          '<span class="status-dot"></span><span>Nessuna raccolta domani</span>';
+        return;
+      }
+
+      types.forEach((t) => {
+        const chip = document.createElement("div");
+        chip.className = "chip " + chipClassFor(t);
+
+        const dot = document.createElement("span");
+        dot.className = "chip-dot";
+
+        const label = document.createElement("span");
+        label.textContent = t;
+
+        chip.appendChild(dot);
+        chip.appendChild(label);
+        chipsContainer.appendChild(chip);
+      });
+
+      noteLabel.textContent =
+        "Ricorda di esporre i contenitori la sera precedente, entro l'orario previsto dal regolamento.";
+      status.className = "status status-ok";
+      status.innerHTML =
+        '<span class="status-dot"></span><span>Calendario caricato</span>';
+    }
+
+function renderRange(start, end) {
+  const out = document.getElementById("rangeOutput");
+  out.innerHTML = "";
+
+  const d = new Date(start);
+  const last = new Date(end);
+
+  while (d <= last) {
+    const iso = toISODate(d);
+    const types = schedule[iso] || [];
+
+    const line = document.createElement("div");
+    line.style.marginBottom = "4px";
+
+    const dateLabel = capitalize(
+      d.toLocaleDateString("it-IT", { weekday: "long", day: "2-digit", month: "2-digit" })
+    );
+
+    if (types.length === 0) {
+      line.textContent = `${dateLabel}: —`;
+    } else {
+      line.textContent = `${dateLabel}: ${types.join(", ")}`;
+    }
+
+    out.appendChild(line);
+    d.setDate(d.getDate() + 1);
+  }
+}
+
+function showWeek() {
+  const today = new Date();
+  const start = new Date(today);
+  const end = new Date(today);
+  end.setDate(end.getDate() + 7);
+  renderRange(start, end);
+}
+
+function showTwoWeeks() {
+  const today = new Date();
+  const start = new Date(today);
+  const end = new Date(today);
+  end.setDate(end.getDate() + 14);
+  renderRange(start, end);
+}
+
+function showMonth() {
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), 1);
+  const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  renderRange(start, end);
+}
+
+function showFiveWeeks() {
+  const today = new Date();
+
+  const start = new Date(today);
+  start.setDate(start.getDate() - 14);
+
+  const end = new Date(today);
+  end.setDate(end.getDate() + 14);
+
+  renderRange(start, end);
+}
+
+
+
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
+
+
+
+
