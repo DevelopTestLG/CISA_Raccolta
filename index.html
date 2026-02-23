@@ -1288,113 +1288,94 @@
       return "";
     }
 
-    function init() {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
+function init() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
 
-      const isoTomorrow = toISODate(tomorrow);
+  const isoTomorrow = toISODate(tomorrow);
 
-      const todayLabel = document.getElementById("todayLabel");
-      const tomorrowLabel = document.getElementById("tomorrowLabel");
-      const isoLabel = document.getElementById("isoLabel");
-      const noteLabel = document.getElementById("noteLabel");
-      const chipsContainer = document.getElementById("chipsContainer");
-      const status = document.getElementById("status");
-      const rangeLabel = document.getElementById("rangeLabel");
+  const todayLabel = document.getElementById("todayLabel");
+  const tomorrowLabel = document.getElementById("tomorrowLabel");
+  const isoLabel = document.getElementById("isoLabel");
+  const noteLabel = document.getElementById("noteLabel");
+  const chipsContainer = document.getElementById("chipsContainer");
+  const status = document.getElementById("status");
+  const rangeLabel = document.getElementById("rangeLabel");
 
-      todayLabel.textContent = "Oggi: " + capitalize(formatItalianDate(today));
-      tomorrowLabel.textContent =
-        "Domani: " + capitalize(formatItalianDate(tomorrow));
-      isoLabel.textContent = "Data: " + isoTomorrow;
+  todayLabel.textContent = "Oggi: " + capitalize(formatItalianDate(today));
+  tomorrowLabel.textContent =
+    "Domani: " + capitalize(formatItalianDate(tomorrow));
+  isoLabel.textContent = "Data: " + isoTomorrow;
 
-      const dates = Object.keys(schedule).sort();
-      if (dates.length === 0) {
-        chipsContainer.innerHTML = "";
-        const span = document.createElement("span");
-        span.textContent = "Calendario non configurato.";
-        span.style.fontSize = "13px";
-        chipsContainer.appendChild(span);
+  const dates = Object.keys(schedule).sort();
+  if (dates.length === 0) {
+    chipsContainer.innerHTML = "";
+    const span = document.createElement("span");
+    span.textContent = "Calendario non configurato.";
+    span.style.fontSize = "13px";
+    chipsContainer.appendChild(span);
 
-        noteLabel.textContent =
-          "Devi incollare i dati del calendario nell'oggetto 'schedule' nel codice.";
-        status.className = "status status-err";
-        status.innerHTML =
-          '<span class="status-dot"></span><span>Nessun dato calendario</span>';
-        rangeLabel.textContent = "Calendario: —";
-        return;
+    noteLabel.textContent =
+      "Devi incollare i dati del calendario nell'oggetto 'schedule' nel codice.";
+    status.className = "status status-err";
+    status.innerHTML =
+      '<span class="status-dot"></span><span>Nessun dato calendario</span>';
+    rangeLabel.textContent = "Calendario: —";
+    return;
+  }
 
+  const first = dates[0];
+  const last = dates[dates.length - 1];
+  rangeLabel.textContent = `Calendario: ${first} → ${last}`;
 
+  const types = schedule[isoTomorrow] || [];
 
+  chipsContainer.innerHTML = "";
 
-
-
-
-
-
-        
-      
-      }
-
-      const first = dates[0];
-      const last = dates[dates.length - 1];
-      rangeLabel.textContent = `Calendario: ${first} → ${last}`;
-
-      const types = schedule[isoTomorrow] || [];
-
-      chipsContainer.innerHTML = "";
-
-    
-        if (!types || types.length === 0) {
+  if (!types || types.length === 0) {
     const span = document.createElement("span");
     span.textContent = "Nessun conferimento previsto.";
     span.style.fontSize = "20px";      // più grande
     span.style.fontWeight = "bold";    // grassetto
     span.style.color = "#ff3333";      // rosso evidente
-
     chipsContainer.appendChild(span);
 
+    noteLabel.textContent =
+      "Per questa data non risultano raccolte nel calendario.";
+    status.className = "status status-warn";
+    status.innerHTML =
+      '<span class="status-dot"></span><span>Nessuna raccolta domani</span>';
+    return;
+  }
+
+  types.forEach((t) => {
+    const chip = document.createElement("div");
+    chip.className = "chip " + chipClassFor(t);
+
+    const dot = document.createElement("span");
+    dot.className = "chip-dot";
+
+    const label = document.createElement("span");
+    label.textContent = t;
+
+    chip.appendChild(dot);
+    chip.appendChild(label);
+    chipsContainer.appendChild(chip);
+  });
+
+  noteLabel.textContent =
+    "Ricorda di esporre i contenitori la sera precedente, entro l'orario previsto dal regolamento.";
+  status.className = "status status-ok";
+  status.innerHTML =
+    '<span class="status-dot"></span><span>Calendario caricato</span>';
 }
 
 
-}
 
-
-
-      
-
-      
-        noteLabel.textContent =
-          "Per questa data non risultano raccolte nel calendario.";
-        status.className = "status status-warn";
-        status.innerHTML =
-          '<span class="status-dot"></span><span>Nessuna raccolta domani</span>';
-        return;
-      }
-
-      types.forEach((t) => {
-        const chip = document.createElement("div");
-        chip.className = "chip " + chipClassFor(t);
-
-        const dot = document.createElement("span");
-        dot.className = "chip-dot";
-
-        const label = document.createElement("span");
-        label.textContent = t;
-
-        chip.appendChild(dot);
-        chip.appendChild(label);
-        chipsContainer.appendChild(chip);
-      });
-
-      noteLabel.textContent =
-        "Ricorda di esporre i contenitori la sera precedente, entro l'orario previsto dal regolamento.";
-      status.className = "status status-ok";
-      status.innerHTML =
-        '<span class="status-dot"></span><span>Calendario caricato</span>';
-    }
-
+    
+    
 function renderRange(start, end) {
   const out = document.getElementById("rangeOutput");
   out.innerHTML = "";
