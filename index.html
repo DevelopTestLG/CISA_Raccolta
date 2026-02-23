@@ -1324,6 +1324,26 @@
           '<span class="status-dot"></span><span>Nessun dato calendario</span>';
         rangeLabel.textContent = "Calendario: —";
         return;
+
+
+
+        if (!types || types.length === 0) {
+    const span = document.createElement("span");
+    span.textContent = "Nessun conferimento previsto.";
+    span.style.fontSize = "20px";      // più grande
+    span.style.fontWeight = "bold";    // grassetto
+    span.style.color = "#ff3333";      // rosso evidente
+
+    chipsContainer.appendChild(span);
+    return; // evita di proseguire con codice che si aspetta dei chip
+}
+
+
+
+
+
+        
+      
       }
 
       const first = dates[0];
@@ -1334,16 +1354,6 @@
 
       chipsContainer.innerHTML = "";
 
-if (!types || types.length === 0) {
-    const span = document.createElement("span");
-    span.textContent = "Nessun conferimento previsto.";
-    span.style.fontSize = "20px";      // più grande
-    span.style.fontWeight = "bold";    // grassetto
-    span.style.color = "#ff3333";      // rosso evidente
-
-    chipsContainer.appendChild(span);
-    return; // evita di proseguire con codice che si aspetta dei chip
-}
 
 
 
