@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KV Uploader — Raccolta Rifiuti</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: rgba(255,255,255,0.07);
+    --border-active: rgba(99,102,241,0.6);
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --accent: #6366f1;
+    --accent-glow: rgba(99,102,241,0.3);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.15);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.15);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.15);
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 40px 20px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 70% 0%, rgba(99,102,241,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 10% 80%, rgba(99,102,241,0.05) 0%, transparent 50%);
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  /* ── header ── */
+  .header { margin-bottom: 40px; }
+  .header h1 {
+    font-size: 32px; font-weight: 800; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #e8e8f0 30%, #6366f1);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p { color: var(--muted); font-size: 14px; margin-top: 6px; font-family: var(--mono); }
+
+  /* ── card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+  }
+  .card-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── inputs ── */
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: var(--muted); margin-bottom: 6px; font-family: var(--mono);
+    letter-spacing: 0.04em;
+  }
+  .field input {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px;
+    color: var(--text); font-family: var(--mono); font-size: 13px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .field input:focus {
+    border-color: var(--border-active);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .field input::placeholder { color: var(--muted); }
+
+  .hint {
+    font-size: 11px; color: var(--muted); margin-top: 5px;
+    font-family: var(--mono); line-height: 1.5;
+  }
+  .hint a { color: var(--accent); text-decoration: none; }
+  .hint a:hover { text-decoration: underline; }
+
+  /* ── button ── */
+  .btn {
+    width: 100%; padding: 14px;
+    background: var(--accent);
+    border: none; border-radius: 12px;
+    color: #fff; font-family: var(--sans);
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.02em;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    box-shadow: 0 4px 20px var(--accent-glow);
+    position: relative; overflow: hidden;
+  }
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 28px var(--accent-glow);
+  }
+  .btn:active:not(:disabled) { transform: translateY(0); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  /* ── progress ── */
+  .progress-wrap { display: none; margin-top: 24px; }
+  .progress-wrap.visible { display: block; }
+
+  .progress-bar-bg {
+    background: var(--surface2); border-radius: 999px;
+    height: 6px; overflow: hidden; margin-bottom: 12px;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), #818cf8);
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  .progress-stats {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .progress-stats .count { color: var(--text); font-weight: 600; }
+
+  /* ── log ── */
+  .log {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+    max-height: 320px; overflow-y: auto;
+    font-family: var(--mono); font-size: 12px;
+    line-height: 1.7;
+  }
+  .log::-webkit-scrollbar { width: 4px; }
+  .log::-webkit-scrollbar-track { background: transparent; }
+  .log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .log-entry { display: flex; gap: 10px; align-items: baseline; }
+  .log-entry .ts { color: var(--muted); min-width: 52px; }
+  .log-entry .key { color: var(--accent); }
+  .log-entry.ok .status  { color: var(--green); }
+  .log-entry.err .status { color: var(--red); }
+  .log-entry.info .status { color: var(--amber); }
+
+  /* ── summary ── */
+  .summary {
+    display: none; margin-top: 20px;
+    border-radius: 12px; padding: 20px;
+    border: 1px solid;
+    font-family: var(--mono); font-size: 13px;
+  }
+  .summary.ok  { background: var(--green-dim); border-color: rgba(34,197,94,0.3); color: var(--green); }
+  .summary.err { background: var(--red-dim);   border-color: rgba(248,113,113,0.3); color: var(--red); }
+  .summary.visible { display: block; }
+  .summary strong { font-weight: 600; font-size: 15px; display: block; margin-bottom: 4px; }
+
+  /* ── entries preview ── */
+  .entries-count {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px;
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .entries-count span { color: var(--accent); font-weight: 600; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .pulsing { animation: pulse 1s ease-in-out infinite; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <h1>KV Uploader</h1>
+    <p>// raccolta-rifiuti · cloudflare kv · upload automatico</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Credenziali Cloudflare</div>
+
+    <div class="field">
+      <label>ACCOUNT ID</label>
+      <input type="text" id="accountId" placeholder="es. 1a2b3c4d5e6f7890abcdef1234567890"/>
+      <div class="hint">
+        Dashboard Cloudflare → barra laterale destra → <strong>Account ID</strong>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>NAMESPACE ID (KV)</label>
+      <input type="text" id="namespaceId" placeholder="es. abc123def456..."/>
+      <div class="hint">
+        Workers &amp; Pages → KV → clicca su <strong>RACCOLTA_KV</strong> → copia l'ID
+      </div>
+    </div>
+
+    <div class="field">
+      <label>API TOKEN</label>
+      <input type="password" id="apiToken" placeholder="es. abc123XYZ..."/>
+      <div class="hint">
+        <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank">My Profile → API Tokens</a>
+        → Create Token → usa il template <strong>"Edit Cloudflare Workers"</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dati da caricare</div>
+    <div class="entries-count">Pronte <span id="entryCount">30</span> entry — 2 meta + 28 mesi calendario</div>
+    <button class="btn" id="uploadBtn" onclick="startUpload()">
+      Carica tutto su KV →
+    </button>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-stats">
+        <span id="progressLabel" class="pulsing">Inizializzazione…</span>
+        <span><span class="count" id="doneCount">0</span> / <span id="totalCount">30</span></span>
+      </div>
+      <div class="log" id="log"></div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+  </div>
+
+</div>
+
+<script>
+// ── DATI ────────────────────────────────────────────────────────────────────
+const KV_ENTRIES = [
+  {
+    key: "index:province",
+    value: {"torino":["cirie"]}
+  },
+  {
+    key: "meta:torino:cirie",
+    value: {"name":"Ciriè","provincia":"Torino","zone":["A"],"tipi":["Organico","Indifferenziato","Carta","Plastica e Metalli","Vetro"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-01",
+    value: {"01":[],"02":[],"03":[],"04":[],"05":["Organico"],"06":[],"07":["Plastica e Metalli"],"08":["Vetro","Indifferenziato"],"09":[],"10":[],"11":[],"12":["Organico"],"13":[],"14":["Carta"],"15":[],"16":[],"17":[],"18":[],"19":["Organico"],"20":[],"21":["Plastica e Metalli"],"22":["Indifferenziato"],"23":[],"24":[],"25":[],"26":["Organico"],"27":[],"28":["Carta"],"29":["Vetro"],"30":[],"31":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-02",
+    value: {"01":[],"02":["Organico"],"03":[],"04":["Plastica e Metalli"],"05":["Indifferenziato"],"06":[],"07":[],"08":[],"09":["Organico"],"10":[],"11":["Carta"],"12":[],"13":[],"14":[],"15":[],"16":["Organico"],"17":[],"18":["Plastica e Metalli"],"19":["Vetro","Indifferenziato"],"20":[],"21":[],"22":[],"23":["Organico"],"24":[],"25":["Carta"],"26":[],"27":[],"28":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-03",
+    value: {"01":[],"02":["Organico"],"03":["Indifferenziato"],"04":["Carta"],"05":["Vetro"],"06":[],"07":[],"08":[],"09":["Organico"],"10":[],"11":["Plastica e Metalli"],"12":[],"13":[],"14":[],"15":[],"16":["Organico"],"17":["Indifferenziato"],"18":["Carta"],"19":["Vetro"],"20":[],"21":[],"22":[],"23":["Organico"],"24":[],"25":["Plastica e Metalli"],"26":[],"27":[],"28":[],"29":[],"30":["Organico"],"31":["Indifferenziato"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-04",
+    value: {"01":["Carta"],"02":[],"03":[],"04":[],"05":[],"06":[],"07":[],"08":["Plastica e Metalli"],"09":["Vetro"],"10":[],"11":[],"12":[],"13":["Organico"],"14":["Indifferenziato"],"15":["Carta"],"16":["Organico"],"17":[],"18":[],"19":[],"20":["Organico"],"21":[],"22":["Plastica e Metalli"],"23":["Organico"],"24":[],"25":[],"26":[],"27":[],"28":["Carta"],"29":["Organico"],"30":["Vetro","Organico"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-05",
+    value: {"01":[],"02":[],"03":[],"04":["Organico"],"05":[],"06":["Plastica e Metalli"],"07":["Organico"],"08":[],"09":[],"10":[],"11":["Organico"],"12":["Indifferenziato"],"13":["Carta"],"14":["Organico"],"15":[],"16":[],"17":[],"18":["Organico"],"19":[],"20":["Plastica e Metalli"],"21":["Vetro","Organico"],"22":[],"23":[],"24":[],"25":["Organico"],"26":["Indifferenziato"],"27":["Carta"],"28":["Organico"],"29":[],"30":[],"31":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-06",
+    value: {"01":["Organico"],"02":[],"03":["Plastica e Metalli"],"04":["Organico"],"05":[],"06":[],"07":[],"08":["Organico"],"09":["Indifferenziato"],"10":["Carta"],"11":["Vetro","Organico"],"12":[],"13":[],"14":[],"15":["Organico"],"16":[],"17":["Plastica e Metalli"],"18":["Organico"],"19":[],"20":[],"21":[],"22":["Organico"],"23":["Indifferenziato"],"24":["Carta"],"25":["Organico"],"26":[],"27":[],"28":[],"29":["Organico"],"30":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-07",
+    value: {"01":["Plastica e Metalli"],"02":[],"03":[],"04":[],"05":[],"06":["Organico"],"07":["Indifferenziato"],"08":["Carta"],"09":["Vetro","Organico"],"10":[],"11":[],"12":[],"13":["Organico"],"14":[],"15":["Plastica e Metalli"],"16":["Organico"],"17":[],"18":[],"19":[],"20":["Organico"],"21":["Indifferenziato"],"22":["Carta"],"23":["Vetro","Organico"],"24":[],"25":[],"26":[],"27":["Organico"],"28":[],"29":["Plastica e Metalli"],"30":["Organico"],"31":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-08",
+    value: {"01":[],"02":[],"03":["Organico"],"04":["Indifferenziato"],"05":["Carta"],"06":["Organico"],"07":[],"08":[],"09":[],"10":["Organico"],"11":[],"12":["Plastica e Metalli"],"13":["Vetro","Organico"],"14":[],"15":[],"16":[],"17":["Organico"],"18":["Indifferenziato"],"19":["Carta"],"20":["Organico"],"21":[],"22":[],"23":[],"24":["Organico"],"25":[],"26":["Plastica e Metalli"],"27":["Organico"],"28":[],"29":[],"30":[],"31":["Organico"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-09",
+    value: {"01":["Indifferenziato"],"02":["Carta"],"03":["Vetro","Organico"],"04":[],"05":[],"06":[],"07":["Organico"],"08":[],"09":["Plastica e Metalli"],"10":["Organico"],"11":[],"12":[],"13":[],"14":["Organico"],"15":["Indifferenziato"],"16":["Carta"],"17":[],"18":[],"19":[],"20":[],"21":["Organico"],"22":[],"23":["Plastica e Metalli"],"24":["Vetro"],"25":[],"26":[],"27":[],"28":["Organico"],"29":["Indifferenziato"],"30":["Carta"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-10",
+    value: {"01":[],"02":[],"03":[],"04":[],"05":["Organico"],"06":[],"07":["Plastica e Metalli"],"08":[],"09":[],"10":[],"11":[],"12":["Organico"],"13":["Indifferenziato"],"14":["Carta"],"15":["Vetro"],"16":[],"17":[],"18":[],"19":["Organico"],"20":[],"21":["Plastica e Metalli"],"22":[],"23":[],"24":[],"25":[],"26":["Organico"],"27":["Indifferenziato"],"28":["Carta"],"29":[],"30":[],"31":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-11",
+    value: {"01":[],"02":["Organico"],"03":[],"04":["Plastica e Metalli"],"05":["Vetro"],"06":[],"07":[],"08":[],"09":["Organico"],"10":[],"11":["Carta"],"12":[],"13":[],"14":[],"15":[],"16":["Organico"],"17":[],"18":["Plastica e Metalli"],"19":[],"20":[],"21":[],"22":[],"23":["Organico"],"24":["Indifferenziato"],"25":["Carta"],"26":["Vetro"],"27":[],"28":[],"29":[],"30":["Organico"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2026-12",
+    value: {"01":[],"02":["Plastica e Metalli"],"03":[],"04":[],"05":[],"06":[],"07":["Organico"],"08":["Indifferenziato"],"09":["Carta"],"10":[],"11":[],"12":[],"13":[],"14":["Organico"],"15":[],"16":["Plastica e Metalli"],"17":["Vetro"],"18":[],"19":[],"20":[],"21":["Organico"],"22":["Indifferenziato"],"23":["Carta"],"24":[],"25":[],"26":[],"27":["Organico"],"28":[],"29":["Plastica e Metalli"],"30":["Vetro"],"31":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-01",
+    value: {"01":[],"02":[],"03":[],"04":["Organico"],"05":["Carta","Indifferenziato"],"06":[],"07":["Vetro"],"08":[],"09":[],"10":[],"11":["Organico"],"12":[],"13":["Plastica e Metalli"],"14":[],"15":[],"16":[],"17":[],"18":["Organico"],"19":["Indifferenziato"],"20":["Carta"],"21":[],"22":[],"23":[],"24":["Organico"],"25":[],"26":[],"27":["Plastica e Metalli"],"28":["Vetro"],"29":[],"30":[],"31":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-02",
+    value: {"01":["Organico"],"02":["Indifferenziato"],"03":["Carta","Plastica e Metalli"],"04":[],"05":[],"06":[],"07":[],"08":["Organico"],"09":[],"10":["Plastica e Metalli"],"11":[],"12":[],"13":["Indifferenziato"],"14":[],"15":["Organico"],"16":["Indifferenziato"],"17":["Carta"],"18":["Vetro"],"19":[],"20":[],"21":[],"22":["Organico"],"23":[],"24":["Plastica e Metalli"],"25":[],"26":[],"27":[],"28":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-03",
+    value: {"01":["Organico"],"02":["Indifferenziato"],"03":["Carta"],"04":[],"05":[],"06":[],"07":[],"08":["Organico"],"09":[],"10":["Plastica e Metalli"],"11":["Vetro"],"12":[],"13":[],"14":[],"15":["Organico"],"16":["Indifferenziato"],"17":["Carta"],"18":[],"19":[],"20":[],"21":[],"22":["Organico"],"23":[],"24":["Plastica e Metalli"],"25":[],"26":[],"27":[],"28":[],"29":["Organico"],"30":["Indifferenziato"],"31":["Carta"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-04",
+    value: {"01":["Vetro"],"02":[],"03":[],"04":[],"05":["Organico"],"06":[],"07":["Plastica e Metalli"],"08":[],"09":[],"10":[],"11":[],"12":["Organico"],"13":["Indifferenziato"],"14":["Carta"],"15":["Organico"],"16":[],"17":[],"18":[],"19":["Organico"],"20":[],"21":["Plastica e Metalli"],"22":["Vetro","Organico"],"23":[],"24":[],"25":[],"26":["Organico"],"27":["Indifferenziato"],"28":["Carta"],"29":["Organico"],"30":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-05",
+    value: {"01":[],"02":[],"03":["Organico"],"04":[],"05":["Plastica e Metalli"],"06":["Organico"],"07":[],"08":[],"09":[],"10":["Organico"],"11":["Indifferenziato"],"12":["Carta"],"13":["Vetro","Organico"],"14":[],"15":[],"16":[],"17":["Organico"],"18":[],"19":["Plastica e Metalli"],"20":["Organico"],"21":[],"22":[],"23":[],"24":["Organico"],"25":["Indifferenziato"],"26":["Carta"],"27":["Organico"],"28":[],"29":[],"30":[],"31":["Organico"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-06",
+    value: {"01":[],"02":[],"03":["Vetro","Organico"],"04":[],"05":[],"06":[],"07":["Organico"],"08":["Indifferenziato"],"09":["Carta"],"10":["Organico"],"11":[],"12":[],"13":[],"14":["Organico"],"15":[],"16":["Plastica e Metalli"],"17":["Organico"],"18":[],"19":[],"20":[],"21":["Organico"],"22":["Indifferenziato"],"23":["Carta"],"24":["Vetro","Organico"],"25":[],"26":[],"27":[],"28":["Organico"],"29":[],"30":["Plastica e Metalli"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-07",
+    value: {"01":["Organico"],"02":[],"03":[],"04":[],"05":["Organico"],"06":["Indifferenziato"],"07":["Carta"],"08":["Organico"],"09":[],"10":[],"11":[],"12":["Organico"],"13":[],"14":[],"15":["Plastica e Metalli"],"16":["Organico"],"17":[],"18":[],"19":["Organico"],"20":["Indifferenziato"],"21":["Carta"],"22":["Organico"],"23":[],"24":[],"25":[],"26":["Organico"],"27":[],"28":["Plastica e Metalli"],"29":["Organico"],"30":[],"31":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-08",
+    value: {"01":[],"02":[],"03":["Indifferenziato"],"04":["Carta"],"05":["Vetro","Organico"],"06":[],"07":[],"08":[],"09":["Organico"],"10":[],"11":["Plastica e Metalli"],"12":["Organico"],"13":[],"14":[],"15":[],"16":["Organico"],"17":["Indifferenziato"],"18":["Carta"],"19":["Organico"],"20":[],"21":[],"22":[],"23":["Organico"],"24":[],"25":["Plastica e Metalli"],"26":["Vetro","Organico"],"27":[],"28":[],"29":[],"30":["Organico"],"31":["Indifferenziato"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-09",
+    value: {"01":["Carta"],"02":["Organico"],"03":[],"04":[],"05":[],"06":["Organico"],"07":[],"08":["Plastica e Metalli"],"09":["Organico"],"10":[],"11":[],"12":[],"13":["Organico"],"14":["Indifferenziato"],"15":["Carta"],"16":["Vetro"],"17":[],"18":[],"19":[],"20":["Organico"],"21":[],"22":["Plastica e Metalli"],"23":[],"24":[],"25":[],"26":[],"27":["Organico"],"28":["Indifferenziato"],"29":["Plastica e Metalli","Carta"],"30":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-10",
+    value: {"01":[],"02":[],"03":[],"04":["Organico"],"05":[],"06":["Plastica e Metalli"],"07":["Vetro"],"08":[],"09":[],"10":[],"11":["Organico"],"12":["Indifferenziato"],"13":["Carta"],"14":[],"15":[],"16":[],"17":[],"18":["Organico"],"19":[],"20":["Plastica e Metalli"],"21":[],"22":[],"23":[],"24":[],"25":["Organico"],"26":["Indifferenziato"],"27":["Carta"],"28":["Vetro"],"29":[],"30":[],"31":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-11",
+    value: {"01":["Organico"],"02":[],"03":["Plastica e Metalli"],"04":[],"05":[],"06":[],"07":[],"08":["Organico"],"09":["Indifferenziato"],"10":["Carta"],"11":[],"12":[],"13":[],"14":[],"15":["Organico"],"16":[],"17":["Plastica e Metalli"],"18":["Vetro"],"19":[],"20":[],"21":[],"22":["Organico"],"23":["Indifferenziato"],"24":["Carta"],"25":[],"26":[],"27":[],"28":[],"29":["Organico"],"30":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2027-12",
+    value: {"01":["Plastica e Metalli"],"02":[],"03":[],"04":[],"05":[],"06":["Organico"],"07":["Carta","Indifferenziato"],"08":[],"09":["Vetro"],"10":[],"11":[],"12":[],"13":["Organico"],"14":[],"15":["Plastica e Metalli"],"16":[],"17":[],"18":[],"19":[],"20":["Organico"],"21":["Indifferenziato"],"22":["Carta"],"23":[],"24":[],"25":[],"26":[],"27":["Organico"],"28":[],"29":["Plastica e Metalli"],"30":["Vetro"],"31":[]}
+  },
+  {
+    key: "cal:torino:cirie:A:2028-01",
+    value: {"01":[],"02":[],"03":["Organico"],"04":["Indifferenziato"],"05":["Carta"],"06":[],"07":[],"08":[],"09":["Organico"],"10":[],"11":["Plastica e Metalli"],"12":[],"13":[],"14":[],"15":[],"16":["Organico"],"17":["Indifferenziato"],"18":["Carta"],"19":["Vetro"],"20":[],"21":[],"22":[],"23":["Organico"],"24":[],"25":[],"26":["Plastica e Metalli"],"27":[],"28":[],"29":[],"30":[],"31":["Organico"]}
+  },
+  {
+    key: "cal:torino:cirie:A:2028-02",
+    value: {"01":["Indifferenziato"],"02":["Carta"],"03":[],"04":[],"05":[],"06":["Organico"],"07":[],"08":["Plastica e Metalli"],"09":[],"10":[],"11":[],"12":[],"13":[],"14":["Organico"],"15":["Indifferenziato"],"16":["Carta"],"17":[],"18":[],"19":[],"20":["Organico"],"21":[],"22":["Plastica e Metalli"],"23":[],"24":[],"25":[],"26":[],"27":[],"28":["Organico"],"29":["Indifferenziato"]}
+  }
+];
+
+document.getElementById("entryCount").textContent = KV_ENTRIES.length;
+document.getElementById("totalCount").textContent = KV_ENTRIES.length;
+
+// ── UPLOAD ───────────────────────────────────────────────────────────────────
+function ts() {
+  return new Date().toLocaleTimeString("it-IT", {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+
+function addLog(key, status, cls) {
+  const log = document.getElementById("log");
+  const div = document.createElement("div");
+  div.className = `log-entry ${cls}`;
+  div.innerHTML = `<span class="ts">${ts()}</span><span class="key">${key}</span><span class="status">${status}</span>`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+async function uploadEntry(accountId, namespaceId, token, entry) {
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${encodeURIComponent(entry.key)}`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(entry.value),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.errors?.[0]?.message || `HTTP ${res.status}`);
+  }
+}
+
+async function startUpload() {
+  const accountId   = document.getElementById("accountId").value.trim();
+  const namespaceId = document.getElementById("namespaceId").value.trim();
+  const apiToken    = document.getElementById("apiToken").value.trim();
+
+  if (!accountId || !namespaceId || !apiToken) {
+    alert("Compila tutti i campi prima di procedere.");
+    return;
+  }
+
+  const btn = document.getElementById("uploadBtn");
+  btn.disabled = true;
+  btn.textContent = "Upload in corso…";
+
+  const progressWrap = document.getElementById("progressWrap");
+  const progressFill = document.getElementById("progressFill");
+  const progressLabel = document.getElementById("progressLabel");
+  const doneCount = document.getElementById("doneCount");
+  const summary = document.getElementById("summary");
+
+  progressWrap.classList.add("visible");
+  summary.classList.remove("visible");
+  document.getElementById("log").innerHTML = "";
+
+  addLog("sistema", "Avvio upload…", "info");
+
+  let done = 0;
+  let errors = 0;
+  const total = KV_ENTRIES.length;
+
+  for (const entry of KV_ENTRIES) {
+    progressLabel.textContent = `Carico ${entry.key}…`;
+    try {
+      await uploadEntry(accountId, namespaceId, apiToken, entry);
+      done++;
+      addLog(entry.key, "✓ ok", "ok");
+    } catch(e) {
+      errors++;
+      addLog(entry.key, `✗ ${e.message}`, "err");
+    }
+    const pct = Math.round(((done + errors) / total) * 100);
+    progressFill.style.width = pct + "%";
+    doneCount.textContent = done + errors;
+    // Piccola pausa per non saturare l'API
+    await new Promise(r => setTimeout(r, 120));
+  }
+
+  progressLabel.classList.remove("pulsing");
+
+  if (errors === 0) {
+    progressLabel.textContent = "Completato!";
+    progressFill.style.background = "linear-gradient(90deg, #22c55e, #4ade80)";
+    summary.className = "summary ok visible";
+    summary.innerHTML = `<strong>✓ Upload completato con successo</strong>${done} entry caricate su Cloudflare KV. Puoi chiudere questa pagina.`;
+  } else {
+    progressLabel.textContent = "Completato con errori";
+    progressFill.style.background = "linear-gradient(90deg, #f87171, #fca5a5)";
+    summary.className = "summary err visible";
+    summary.innerHTML = `<strong>⚠ Completato con ${errors} errori</strong>${done} entry ok, ${errors} fallite. Controlla il log sopra e riprova.`;
+    btn.disabled = false;
+    btn.textContent = "Riprova →";
+  }
+}
+</script>
+</body>
+</html>
